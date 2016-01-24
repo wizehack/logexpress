@@ -27,6 +27,15 @@ bool expr::CommandConfOptionHandler::request(expr::CommandMessage* cmd_msg)
             
             expr::ConfData* obj_conf = configManager->parse_conf_json(json_conf_payload);
 
+            if(obj_conf == NULL)
+            {
+                // throw errorMessage
+                expr::ErrorMessage::getInstance()->set_err_name("Configuration Error");
+                expr::ErrorMessage::getInstance()->set_err_message("Invalid Configuration File");
+
+                return false;
+            }
+
             if(obj_conf->is_parsed())
             {
                 if(next)

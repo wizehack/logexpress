@@ -29,8 +29,9 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
     if(is_error(jobj))
     {
-        expr::ErrorMessage::getInstance()->set_err_messageEx("Invalid Json File");
-        return false;
+        expr::ErrorMessage::getInstance()->set_err_messageEx("Json syntex error");
+        expr::ConfData::getInstance()->set_parsed(false);
+        return NULL;
     }
 
     bool parsed = true;
