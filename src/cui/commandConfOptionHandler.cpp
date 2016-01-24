@@ -3,6 +3,7 @@
 #include "commandConfOptionHandler.h"
 #include "configManager.h"
 #include "file.h"
+#include "errorMessage.h"
 
 expr::CommandConfOptionHandler::CommandConfOptionHandler(){}
 
@@ -40,20 +41,23 @@ bool expr::CommandConfOptionHandler::request(expr::CommandMessage* cmd_msg)
             else
             {
                 // throw errorMessage
+                expr::ErrorMessage::getInstance()->set_err_name("Configuration Error");
+                expr::ErrorMessage::getInstance()->set_err_message("Invalid Configuration File");
                 return false;
             }
         }
         else
         {
-            //set errormessage
-            // throw errorMessage
+            expr::ErrorMessage::getInstance()->set_err_name("Configuration Error");
+            expr::ErrorMessage::getInstance()->set_err_message("configuration file is NOT found");
             return false;
         }
     }
     else
     {
-        //set errormessage
-        // throw errorMessage
+        expr::ErrorMessage::getInstance()->set_err_name("COnfiguration Error!");
+        expr::ErrorMessage::getInstance()->set_err_message("logexpress [--config | -c] [value]");
+
         return false;
     }
 }

@@ -10,12 +10,14 @@ set(INCLUDE_DIR_CONF ${ROOT_DIR}/src/configmanagement)
 set(INCLUDE_DIR_UTILS ${ROOT_DIR}/src/logmanagement)
 set(INCLUDE_DIR_LOGMGR ${ROOT_DIR}/src/utils)
 set(INCLUDE_DIR_CUI ${ROOT_DIR}/src/cui)
+set(INCLUDE_DIR_ERROR ${ROOT_DIR}/src/error)
 
 include_directories(
     ${INCLUDE_DIR_CONF}
     ${INCLUDE_DIR_UTILS}
     ${INCLUDE_DIR_LOGMGR}
     ${INCLUDE_DIR_CUI}
+    ${INCLUDE_DIR_ERROR}
 )
 
 add_executable(
@@ -31,6 +33,7 @@ add_executable(
     ${ROOT_DIR}/src/configmanagement/confData.cpp
     ${ROOT_DIR}/src/configmanagement/configManager.cpp
     ${ROOT_DIR}/src/configmanagement/logMap.cpp
+    ${ROOT_DIR}/src/error/errorMessage.cpp
 )
 
 # -ljson-c -lglib-2.0 

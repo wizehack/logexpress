@@ -1,14 +1,9 @@
 #include <memory>
-#include "logger.h"
 #include "commandMessage.h"
 #include "userInteractionManager.h"
-#include "file.h"
 
 int main(int argc, char* argv[])
 {
-    expr::Logger logger;
-    logger.log("test log");
-
     expr::UserInteractionManager* user_interaction_mgr = new expr::UserInteractionManager();
 
     std::shared_ptr<expr::CommandMessage> sptr_cm = std::make_shared<expr::CommandMessage>();

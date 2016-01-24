@@ -6,6 +6,7 @@
 #include "commandConfOptionHandler.h"
 #include "confData.h"
 #include "logger.h"
+#include "errorMessage.h"
 
 expr::UserInteractionManager::UserInteractionManager(){}
 
@@ -36,8 +37,14 @@ void expr::UserInteractionManager::process_command(expr::CommandMessage* cmd_msg
     }
     else
     {
-        logger.log("failed");
-        //get error message
+        logger.log("Error: ");
+
+        if(expr::ErrorMessage::getInstance()->is_error_found())
+        {
+            logger.log(expr::ErrorMessage::getInstance()->get_err_name());
+            logger.log(expr::ErrorMessage::getInstance()->get_err_message());
+            logger.log(expr::ErrorMessage::getInstance()->get_err_messageEx());
+        }
     }
 }
 

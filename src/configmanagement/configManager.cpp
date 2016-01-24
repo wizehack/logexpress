@@ -7,6 +7,7 @@
 #include "configManager.h"
 #include "logMap.h"
 #include "file.h"
+#include "errorMessage.h"
 
 expr::ConfigManager::ConfigManager(){}
 
@@ -28,7 +29,7 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
     if(is_error(jobj))
     {
-        std::cout << "configuration file error" << std::endl; 
+        expr::ErrorMessage::getInstance()->set_err_messageEx("Invalid Json File");
         return false;
     }
 
@@ -36,25 +37,35 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
     if(!json_object_object_get_ex(jobj, "conf", &confjobj))
     {
-        std::cout << "cannot find conf" << std::endl; 
+        expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find conf");
         parsed = false;
     }
     else
     {
         if(!json_object_object_get_ex(confjobj, "log_priority", &subjobj))
         {
-            std::cout << "cannot find log_level" << std::endl; 
+            expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find log_priority");
             parsed = false;
         }
         else
         {
             std::string priority(json_object_get_string(subjobj));
-            expr::ConfData::getInstance()->set_log_priority(this->get_priority(priority));
+            expr::PRIORITY level = this->get_priority(priority);
+
+            if(level == NOT_DEFINED)
+            {
+                expr::ErrorMessage::getInstance()->set_err_messageEx("NOT defined Priority");
+                parsed = false;
+            }
+            else
+            {
+                expr::ConfData::getInstance()->set_log_priority(level);
+            }
         }
 
         if(!json_object_object_get_ex(confjobj, "export_period", &subjobj))
         {
-            std::cout << "cannot find export_period" << std::endl; 
+            expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find export_period");
             parsed = false;
         }
         else
@@ -64,7 +75,7 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
         if(!json_object_object_get_ex(confjobj, "max_log_buffer_size", &subjobj))
         {
-            std::cout << "cannot find export_period" << std::endl; 
+            expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find export_period");
             parsed = false;
         }
         else
@@ -74,7 +85,7 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
         if(!json_object_object_get_ex(confjobj, "mapping", &subjobj))
         {
-            std::cout << "cannot find mapping" << std::endl; 
+            expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find mapping");
             parsed = false;
         }
         else
@@ -86,7 +97,7 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
             if(arr_obj == NULL)
             {
-                std::cout << "mapping list error" << std::endl; 
+                expr::ErrorMessage::getInstance()->set_err_messageEx("mapping list error");
                 return false;
             }
 
@@ -124,7 +135,7 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
                     }
                     else
                     {
-                        std::cout << "Invalid key: " << key << std::endl; 
+                        expr::ErrorMessage::getInstance()->set_err_messageEx("Invalid key: " + key);
                         parsed = false;
                     }
 
