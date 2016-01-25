@@ -126,7 +126,7 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
                     {
                         ps_log_id = value;
                     }
-                    else if(key.compare("log_daemon_id") == 0)
+                    else if(key.compare("log_file_id") == 0)
                     {
                         log_d_id = value;
                     }
