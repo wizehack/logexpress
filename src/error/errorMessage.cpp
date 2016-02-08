@@ -1,76 +1,50 @@
 #include "errorMessage.h"
 
-std::atomic<expr::ErrorMessage*> expr::ErrorMessage::_singleton;
-std::mutex expr::ErrorMessage::_mutex;
-
 expr::ErrorMessage::ErrorMessage():
-    error(false),
-    err_name(""),
-    err_message(""),
-    err_messageEx(""){}
+    e_type(UNKNOWN_TYPE),
+    e_code(UNKNOWN_CODE),
+    e_desc(""),
+    e_unknown("unknown error"){}
+    
+
+expr::ErrorMessage::ErrorMessage(expr::error_type type, expr::error_code code):
+    e_type(type),
+    e_code(code),
+    e_desc(""){}
+
 expr::ErrorMessage::~ErrorMessage(){}
 
-expr::ErrorMessage* expr::ErrorMessage::getInstance() { 
-	expr::ErrorMessage* inst = _singleton.load(std::memory_order_relaxed);
-	std::atomic_thread_fence(std::memory_order_acquire);
-	if(inst == 0) {
-		std::lock_guard<std::mutex> lock(_mutex);
-		inst = _singleton.load(std::memory_order_relaxed);
-		if(inst == 0) {
-			inst = new expr::ErrorMessage();
-			std::atomic_thread_fence(std::memory_order_release);
-			_singleton.store(inst, std::memory_order_relaxed);
-		}
-	}
-	return inst;
+void expr::ErrorMessage::set_error_type(expr::error_type type)
+{
+    this->e_type = type;
 }
 
-void expr::ErrorMessage::initialize()
+void expr::ErrorMessage::set_error_code(expr::error_code code)
 {
-    this->error = false;
-    err_name.clear();
-    err_message.clear();
-    err_messageEx.clear();
+    this->e_code = code;
 }
 
-bool expr::ErrorMessage::is_error_found()
+void expr::ErrorMessage::set_error_desc(std::string desc)
 {
-    return this->error;
+    this->e_desc = desc;
 }
 
-void expr::ErrorMessage::set_err_name(std::string name)
+expr::error_type expr::ErrorMessage::get_error_type()
 {
-    if(name.empty() == false)
-    {
-        this->error = true;
-        this->err_name = name;
-    }
+    return this->e_type;
 }
 
-void expr::ErrorMessage::set_err_message(std::string msg)
+expr::error_code expr::ErrorMessage::get_error_code()
 {
-    if(msg.empty() == false)
-    {
-        this->err_message = msg;
-    }
+    return this->e_code;
 }
 
-void expr::ErrorMessage::set_err_messageEx(std::string msg)
+std::string expr::ErrorMessage::get_error_desc()
 {
-    this->err_messageEx = msg;
+    return this->e_desc;
 }
 
-std::string expr::ErrorMessage::get_err_name()
+const char* expr::ErrorMessage::get_error_unknown()
 {
-    return this->err_name;
-}
-
-std::string expr::ErrorMessage::get_err_message()
-{
-    return this->err_message;
-}
-
-std::string expr::ErrorMessage::get_err_messageEx()
-{
-    return this->err_messageEx;
+    return this->e_unknown;
 }

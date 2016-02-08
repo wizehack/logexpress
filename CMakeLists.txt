@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.8.7)
 project (logexpress)
 
 #-Wall -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -std=c++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -std=c++11")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
 set(ROOT_DIR /home/wizehack/cpp_proj/logexpress)
@@ -33,7 +33,11 @@ add_executable(
     ${ROOT_DIR}/src/configmanagement/confData.cpp
     ${ROOT_DIR}/src/configmanagement/configManager.cpp
     ${ROOT_DIR}/src/configmanagement/logMap.cpp
+    ${ROOT_DIR}/src/error/errorHandler.cpp
+    ${ROOT_DIR}/src/error/usageErrorHandler.cpp
+    ${ROOT_DIR}/src/error/configErrorHandler.cpp
     ${ROOT_DIR}/src/error/errorMessage.cpp
+    ${ROOT_DIR}/src/error/errorMessagePool.cpp
 )
 
 # -ljson-c -lglib-2.0 

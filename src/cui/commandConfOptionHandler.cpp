@@ -4,16 +4,28 @@
 #include "configManager.h"
 #include "file.h"
 #include "errorMessage.h"
+#include "errorMessagePool.h"
 
 expr::CommandConfOptionHandler::CommandConfOptionHandler(){}
 
 expr::CommandConfOptionHandler::~CommandConfOptionHandler(){}
 
-bool expr::CommandConfOptionHandler::request(expr::CommandMessage* cmd_msg)
+void expr::CommandConfOptionHandler::request(expr::CommandMessage* cmd_msg)
 {
+    expr::ConfigManager* configManager = NULL;
+    expr::error_type e_type = expr::CONFIG;
+    expr::error_code e_code = expr::UNKNOWN_CODE;
+
     std::string opt_conf = cmd_msg->get_opt_conf();
     std::string path_conf = cmd_msg->get_path_conf();
-    expr::ConfigManager* configManager = NULL;
+
+    if(path_conf.empty())
+    {
+        e_code = expr::CONFIG_FILE;
+        std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+        error_input_param->set_error_desc("please set configuration file. [-c | --config] file");
+        expr::ErrorMessagePool::getInstance()->add(error_input_param);
+    }
 
     // ./logexpress --config ~/cpp_proj/logexpress/resource/default.conf
     if( (opt_conf.compare("--config") == 0) || (opt_conf.compare("-c") == 0) )
@@ -29,44 +41,44 @@ bool expr::CommandConfOptionHandler::request(expr::CommandMessage* cmd_msg)
 
             if(obj_conf == NULL)
             {
-                // throw errorMessage
-                expr::ErrorMessage::getInstance()->set_err_name("Configuration Error");
-                expr::ErrorMessage::getInstance()->set_err_message("Invalid Configuration File");
-
-                return false;
+                e_code = expr::CONFIG_PARSE;
+                std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                error_input_param->set_error_desc(path_conf + " is NOT json");
+                expr::ErrorMessagePool::getInstance()->add(error_input_param);
             }
 
-            if(obj_conf->is_parsed())
+            //configuration using obj_conf
+
+            /*
+            if(obj_conf)
             {
-                if(next)
-                {
-                    return next->request(cmd_msg);
-                }
-                else
-                {
-                    return true;
-                }
+                delete obj_conf;
+                obj_conf = NULL;
             }
-            else
-            {
-                // throw errorMessage
-                expr::ErrorMessage::getInstance()->set_err_name("Configuration Error");
-                expr::ErrorMessage::getInstance()->set_err_message("Invalid Configuration File");
-                return false;
-            }
+            */
+
         }
         else
         {
-            expr::ErrorMessage::getInstance()->set_err_name("Configuration Error");
-            expr::ErrorMessage::getInstance()->set_err_message("configuration file is NOT found");
-            return false;
+            if(path_conf.empty() == false)
+            {
+                e_code = expr::CONFIG_FILE;
+                std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                error_input_param->set_error_desc(path_conf + " is NOT found");
+                expr::ErrorMessagePool::getInstance()->add(error_input_param);
+            }
         }
     }
     else
     {
-        expr::ErrorMessage::getInstance()->set_err_name("COnfiguration Error!");
-        expr::ErrorMessage::getInstance()->set_err_message("logexpress [--config | -c] [value]");
+        e_code = expr::INVALID_OPT;
+        std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+        error_input_param->set_error_desc("please set configuration file");
+        expr::ErrorMessagePool::getInstance()->add(error_input_param);
+    }
 
-        return false;
+    if(next)
+    {
+        next->request(cmd_msg);
     }
 }

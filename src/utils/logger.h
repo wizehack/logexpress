@@ -8,7 +8,7 @@ namespace expr {
         public:
             Logger();
             ~Logger();
-            void log(std::string str);
+            void show(std::string str);
     };
 }
 

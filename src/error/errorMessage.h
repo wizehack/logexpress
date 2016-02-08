@@ -1,39 +1,44 @@
 #ifndef ERROR_MESSAGE_H_
 #define ERROR_MESSAGE_H_
 
-#include <mutex>
-#include <atomic>
-#include <string>
-#include <memory>
-
 #include <string>
 
 namespace expr {
+
+    enum error_type {
+        UNKNOWN_TYPE,
+        USAGE,
+        CONFIG
+    };
+
+    enum error_code {
+        UNKNOWN_CODE,
+        OPT_NUMBER,
+        INVALID_OPT,
+        CONFIG_FILE,
+        CONFIG_JSON,
+        CONFIG_PARSE
+    };
+
     class ErrorMessage {
         public:
-            ~ErrorMessage();
-            static ErrorMessage* getInstance();
-            void initialize();
-            bool is_error_found();
-            void set_err_name(std::string name);
-            void set_err_message(std::string msg);
-            void set_err_messageEx(std::string msg);
-            std::string get_err_name();
-            std::string get_err_message();
-            std::string get_err_messageEx();
-
-        private: 
             ErrorMessage();
+            ErrorMessage(expr::error_type type, expr::error_code code);
+            ~ErrorMessage();
+            void set_error_type(expr::error_type type);
+            void set_error_code(expr::error_code desc);
+            void set_error_desc(std::string desc);
+
+            expr::error_type get_error_type();
+            expr::error_code get_error_code();
+            std::string get_error_desc();
+            const char* get_error_unknown();
 
         private:
-            bool error;
-            std::string err_name;
-            std::string err_message;
-            std::string err_messageEx;
-
-        private:
-            static std::atomic<ErrorMessage*> _singleton;
-            static std::mutex _mutex;
+            expr::error_type e_type;
+            expr::error_code e_code;
+            std::string e_desc; //error description
+            const char* e_unknown;
     };
 }
 

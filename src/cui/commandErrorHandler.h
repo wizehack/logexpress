@@ -8,7 +8,7 @@ namespace expr {
         public:
             CommandErrorHandler();
             ~CommandErrorHandler();
-            bool request(expr::CommandMessage* cmd_msg); 
+            void request(expr::CommandMessage* cmd_msg); 
     };
 }
 

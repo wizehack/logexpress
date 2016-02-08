@@ -8,6 +8,7 @@
 #include "logMap.h"
 #include "file.h"
 #include "errorMessage.h"
+#include "errorMessagePool.h"
 
 expr::ConfigManager::ConfigManager(){}
 
@@ -27,25 +28,30 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
     jobj = json_tokener_parse(payload);
 
-    if(is_error(jobj))
+    if((jobj == NULL) || is_error(jobj))
     {
-        expr::ErrorMessage::getInstance()->set_err_messageEx("Json syntex error");
-        expr::ConfData::getInstance()->set_parsed(false);
         return NULL;
     }
 
     bool parsed = true;
+    expr::error_type e_type = expr::CONFIG;
+    expr::error_code e_code = expr::CONFIG_PARSE;
 
     if(!json_object_object_get_ex(jobj, "conf", &confjobj))
     {
-        expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find conf");
+        std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+        error_input_param->set_error_desc("cannot find conf");
+        expr::ErrorMessagePool::getInstance()->add(error_input_param);
+
         parsed = false;
     }
     else
     {
         if(!json_object_object_get_ex(confjobj, "log_priority", &subjobj))
         {
-            expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find log_priority");
+            std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+            error_input_param->set_error_desc("cannot find log_priority");
+            expr::ErrorMessagePool::getInstance()->add(error_input_param);
             parsed = false;
         }
         else
@@ -55,7 +61,9 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
             if(level == NOT_DEFINED)
             {
-                expr::ErrorMessage::getInstance()->set_err_messageEx("NOT defined Priority");
+                std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                error_input_param->set_error_desc("invalid Priority");
+                expr::ErrorMessagePool::getInstance()->add(error_input_param);
                 parsed = false;
             }
             else
@@ -66,7 +74,9 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
         if(!json_object_object_get_ex(confjobj, "export_period", &subjobj))
         {
-            expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find export_period");
+            std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+            error_input_param->set_error_desc("cannot find export_period");
+            expr::ErrorMessagePool::getInstance()->add(error_input_param);
             parsed = false;
         }
         else
@@ -76,7 +86,9 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
         if(!json_object_object_get_ex(confjobj, "max_log_buffer_size", &subjobj))
         {
-            expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find export_period");
+            std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+            error_input_param->set_error_desc("cannot find max_log_buffer_size");
+            expr::ErrorMessagePool::getInstance()->add(error_input_param);
             parsed = false;
         }
         else
@@ -86,7 +98,9 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
         if(!json_object_object_get_ex(confjobj, "mapping", &subjobj))
         {
-            expr::ErrorMessage::getInstance()->set_err_messageEx("cannot find mapping");
+            std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+            error_input_param->set_error_desc("cannot find mapping");
+            expr::ErrorMessagePool::getInstance()->add(error_input_param);
             parsed = false;
         }
         else
@@ -98,11 +112,22 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
             if(arr_obj == NULL)
             {
-                expr::ErrorMessage::getInstance()->set_err_messageEx("mapping list error");
-                return false;
+                std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                error_input_param->set_error_desc("mapping list error");
+                expr::ErrorMessagePool::getInstance()->add(error_input_param);
+                parsed = false;
             }
 
             int arr_size = array_list_length(arr_obj);
+            
+            if(arr_size < 1)
+            {
+                std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                error_input_param->set_error_desc("please set mapping table");
+                expr::ErrorMessagePool::getInstance()->add(error_input_param);
+                parsed = false;
+            }
+
             json_object* arr_item = NULL;
             int arr_index;
             std::string key;
@@ -116,6 +141,10 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
             {
                 arr_item = static_cast<json_object*>(array_list_get_idx(arr_obj, arr_index));
                 entry = json_object_get_object(static_cast<struct json_object*>(arr_item))->head;
+
+                ps_log_id.clear();
+                log_d_id.clear();
+                log_F_path.clear();
 
                 while(entry)
                 {
@@ -136,14 +165,44 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
                     }
                     else
                     {
-                        expr::ErrorMessage::getInstance()->set_err_messageEx("Invalid key: " + key);
+                        std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                        error_input_param->set_error_desc("Invalid key: " + key);
+                        expr::ErrorMessagePool::getInstance()->add(error_input_param);
                         parsed = false;
                     }
 
                     entry = entry->next;
                 } //while
 
-                expr::ConfData::getInstance()->add_to_table(ps_log_id, log_d_id, log_F_path);
+                if(ps_log_id.empty())
+                {
+                    std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                    error_input_param->set_error_desc("process_log_id key is NOT found at array[" + std::to_string(arr_index) + "]");
+                    expr::ErrorMessagePool::getInstance()->add(error_input_param);
+                    parsed = false;
+                }
+
+                if(log_d_id.empty())
+                {
+                    std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                    error_input_param->set_error_desc("log_file_id key is NOT found at array[" + std::to_string(arr_index) + "]");
+                    expr::ErrorMessagePool::getInstance()->add(error_input_param);
+                    parsed = false;
+
+                }
+
+                if(log_F_path.empty())
+                {
+                    std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
+                    error_input_param->set_error_desc("log_file_path key is NOT found at array[" + std::to_string(arr_index) + "]");
+                    expr::ErrorMessagePool::getInstance()->add(error_input_param);
+                    parsed = false;
+                }
+
+                if( (ps_log_id.empty() == false) && (log_d_id.empty() == false) && (log_F_path.empty() == false) )
+                {
+                    expr::ConfData::getInstance()->add_to_table(ps_log_id, log_d_id, log_F_path);
+                }
             } //for
         }
     }

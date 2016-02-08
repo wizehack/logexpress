@@ -1,8 +1,7 @@
 #include "commandHandler.h"
 
 expr::CommandHandler::CommandHandler():
-    next(NULL)
-{}
+    next(NULL){}
 
 expr::CommandHandler::~CommandHandler(){}
 

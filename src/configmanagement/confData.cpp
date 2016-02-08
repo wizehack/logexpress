@@ -1,4 +1,5 @@
 #include "confData.h"
+#include "logger.h"
 
 std::atomic<expr::ConfData*> expr::ConfData::_singleton;
 std::mutex expr::ConfData::_mutex;

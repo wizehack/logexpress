@@ -7,6 +7,10 @@
 #include "confData.h"
 #include "logger.h"
 #include "errorMessage.h"
+#include "errorMessagePool.h"
+#include "errorHandler.h"
+#include "usageErrorHandler.h"
+#include "configErrorHandler.h"
 
 expr::UserInteractionManager::UserInteractionManager(){}
 
@@ -17,34 +21,60 @@ expr::UserInteractionManager::~UserInteractionManager(){}
  */
 void expr::UserInteractionManager::process_command(expr::CommandMessage* cmd_msg)
 {
+    expr::ErrorMessagePool::getInstance()->init();
     expr::CommandHandler* cmdErrHandler = new expr::CommandErrorHandler();
     expr::CommandHandler* cmdConfigHandler = new expr::CommandConfOptionHandler();
     cmdErrHandler->set_next(cmdConfigHandler);
-    bool processed = cmdErrHandler->request(cmd_msg);
+    cmdErrHandler->request(cmd_msg);
 
-    expr::Logger logger;
+    if(expr::ErrorMessagePool::getInstance()->size() > 0)
+    {
+        expr::ErrorHandler* usage_err_handler = new expr::UsageErrorHandler();
+        expr::ErrorHandler* config_err_handler = new expr::ConfigErrorHandler();
 
-    if(processed)
+        usage_err_handler->set_next(config_err_handler);
+
+        int i;
+        for(i = 0; i < expr::ErrorMessagePool::getInstance()->size(); i++)
+        {
+            usage_err_handler->request(expr::ErrorMessagePool::getInstance()->get(i).get());
+        }
+
+        if(usage_err_handler)
+        {
+            delete usage_err_handler;
+            usage_err_handler = NULL;
+        }
+
+        if(config_err_handler)
+        {
+            delete config_err_handler;
+            usage_err_handler = NULL;
+        }
+    }
+    else
     {
         std::list<std::shared_ptr<expr::LogMap>> log_map_table = expr::ConfData::getInstance()->get_mapping_table();
         std::list<std::shared_ptr<expr::LogMap>>::iterator itor;
 
         //test code to show parsed results 
+        expr::Logger logger;
         for(itor = log_map_table.begin(); itor != log_map_table.end(); itor++)
         {
-            logger.log((*itor)->get_process_log_id() + " : " + (*itor)->get_log_daemon_id() + " : " + (*itor)->get_log_file_path());
+            logger.show((*itor)->get_process_log_id() + " : " + (*itor)->get_log_daemon_id() + " : " + (*itor)->get_log_file_path());
         }
     }
-    else
-    {
-        logger.log("Error: ");
 
-        if(expr::ErrorMessage::getInstance()->is_error_found())
-        {
-            logger.log(expr::ErrorMessage::getInstance()->get_err_name());
-            logger.log(expr::ErrorMessage::getInstance()->get_err_message());
-            logger.log(expr::ErrorMessage::getInstance()->get_err_messageEx());
-        }
+    if(cmdErrHandler)
+    {
+        delete cmdErrHandler;
+        cmdErrHandler = NULL;
+    }
+
+    if(cmdConfigHandler)
+    {
+        delete cmdConfigHandler;
+        cmdErrHandler = NULL;
     }
 }
 

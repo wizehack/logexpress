@@ -8,7 +8,7 @@ namespace expr {
         public:
             CommandConfOptionHandler();
             ~CommandConfOptionHandler();
-            bool request(expr::CommandMessage* cmd_msg); 
+            void request(expr::CommandMessage* cmd_msg); 
     };
 }
 
