@@ -1,5 +1,5 @@
 #include <algorithm> 
-
+#include <glib-2.0/glib.h>
 #include "userInteractionManager.h"
 #include "commandHandler.h"
 #include "commandErrorHandler.h"
@@ -11,6 +11,9 @@
 #include "errorHandler.h"
 #include "usageErrorHandler.h"
 #include "configErrorHandler.h"
+#include "logManager.h"
+#include "udpServer.h"
+#include "timer.h"
 
 expr::UserInteractionManager::UserInteractionManager(){}
 
@@ -19,7 +22,7 @@ expr::UserInteractionManager::~UserInteractionManager(){}
 /**
  * @brief This throws user's command to CommandHandler to start logexpress daemon 
  */
-void expr::UserInteractionManager::process_command(expr::CommandMessage* cmd_msg)
+bool expr::UserInteractionManager::process_command(expr::CommandMessage* cmd_msg)
 {
     expr::ErrorMessagePool::getInstance()->init();
     expr::CommandHandler* cmdErrHandler = new expr::CommandErrorHandler();
@@ -51,6 +54,8 @@ void expr::UserInteractionManager::process_command(expr::CommandMessage* cmd_msg
             delete config_err_handler;
             usage_err_handler = NULL;
         }
+
+        return false;
     }
     else
     {
@@ -61,8 +66,27 @@ void expr::UserInteractionManager::process_command(expr::CommandMessage* cmd_msg
         expr::Logger logger;
         for(itor = log_map_table.begin(); itor != log_map_table.end(); itor++)
         {
-            logger.show((*itor)->get_process_log_id() + " : " + (*itor)->get_log_daemon_id() + " : " + (*itor)->get_log_file_path());
+            //fill logHandlerPool
+            expr::LogManager::getInstance()->add_logHandler((*itor)->get_process_log_id(), (*itor)->get_log_file_path());
         }
+
+        expr::LogManager::getInstance()->debug_logHandlerPool();
+
+        logger.show("start threads...");
+        
+        //start msg processor thread
+        g_thread_create(expr::LogManager::_msg_processor_thread, NULL, TRUE, NULL);
+
+        //start command listener thread
+        g_thread_create(expr::UDPServer::_cmd_listener_thread, NULL, TRUE, NULL);
+
+        //start timer thread 
+        g_thread_create(expr::Timer::_timer_thread, NULL, TRUE, NULL);
+
+        /* launch log listener daemon */
+        g_thread_create(expr::UDPServer::_log_listener_thread, NULL, TRUE, NULL);
+
+        logger.show("threads are started");
     }
 
     if(cmdErrHandler)
@@ -76,5 +100,8 @@ void expr::UserInteractionManager::process_command(expr::CommandMessage* cmd_msg
         delete cmdConfigHandler;
         cmdErrHandler = NULL;
     }
+
+    return true;
 }
+
 

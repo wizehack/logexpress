@@ -1,0 +1,1 @@
+g++ -o ./bin/logexprctl ./src/main.cpp ./src/paramParser.cpp ./src/udpClient.cpp -std=c++11

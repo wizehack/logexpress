@@ -6,6 +6,8 @@ std::mutex expr::ConfData::_mutex;
 
 expr::ConfData::ConfData():
     log_priority(DEBUG),
+    log_port(-1),
+    ctl_port(-1),
     export_period(1),
     max_log_buffer_size(10),
     parsed(false){}
@@ -38,6 +40,16 @@ void expr::ConfData::set_log_priority(expr::PRIORITY priority)
     this->log_priority = priority;
 }
 
+void expr::ConfData::set_log_port(int port_number)
+{
+    this->log_port = port_number;
+}
+
+void expr::ConfData::set_ctl_port(int port_number)
+{
+    this->ctl_port = port_number;
+}
+
 void expr::ConfData::set_export_period(int period)
 {
     this->export_period = period;
@@ -52,9 +64,20 @@ void expr::ConfData::set_parsed(bool parsed)
 {
     this->parsed = parsed;
 }
+
 expr::PRIORITY expr::ConfData::get_log_priority()
 {
     return this->log_priority;
+}
+
+int expr::ConfData::get_log_port()
+{
+    return this->log_port;
+}
+
+int expr::ConfData::get_ctl_port()
+{
+    return this->ctl_port;
 }
 
 int expr::ConfData::get_export_period()

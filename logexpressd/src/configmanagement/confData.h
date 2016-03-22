@@ -19,8 +19,8 @@ namespace expr {
         DEBUG,
         INFORM,
         ERROR,
-        CRITICAL,
         FAILURE,
+        CRITICAL,
         NOT_DEFINED
     };
 
@@ -34,12 +34,16 @@ namespace expr {
             static ConfData* getInstance();
 
             void set_log_priority(expr::PRIORITY priority);
+            void set_log_port(int port_number);
+            void set_ctl_port(int port_number);
             void set_export_period(int period);
             void set_max_log_buffer_size(int size);
             void set_parsed(bool parsed);
             void add_to_table(std::string ps_log_id, std::string log_d_id, std::string log_file_path);
 
             expr::PRIORITY get_log_priority();
+            int get_log_port();
+            int get_ctl_port();
             int get_export_period();
             int get_max_log_buffer_size();
             std::list<std::shared_ptr<LogMap>> get_mapping_table();
@@ -50,6 +54,8 @@ namespace expr {
 
         private:
             expr::PRIORITY log_priority;
+            int log_port;
+            int ctl_port;
             int export_period;
             int max_log_buffer_size;
             bool parsed;

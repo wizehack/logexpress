@@ -13,7 +13,7 @@ namespace expr {
         public:
             UserInteractionManager();
             ~UserInteractionManager();
-            void process_command(expr::CommandMessage* cmd_msg);
+            bool process_command(expr::CommandMessage* cmd_msg);
     };
 }
 

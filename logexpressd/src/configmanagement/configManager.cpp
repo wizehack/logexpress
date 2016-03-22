@@ -47,6 +47,24 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
     }
     else
     {
+        if(!json_object_object_get_ex(confjobj, "log_port", &subjobj))
+        {
+        }
+        else
+        {
+            int port = json_object_get_int(subjobj);
+            expr::ConfData::getInstance()->set_log_port(port);
+        }
+
+        if(!json_object_object_get_ex(confjobj, "control_port", &subjobj))
+        {
+        }
+        else
+        {
+            int port = json_object_get_int(subjobj);
+            expr::ConfData::getInstance()->set_ctl_port(port);
+        }
+
         if(!json_object_object_get_ex(confjobj, "log_priority", &subjobj))
         {
             std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
@@ -220,6 +238,11 @@ expr::ConfData* expr::ConfigManager::parse_conf_json(std::string json_conf)
 
     expr::ConfData::getInstance()->set_parsed(parsed);
     return expr::ConfData::getInstance();
+}
+
+void expr::ConfigManager::start_log_manager()
+{
+    std::list<std::shared_ptr<LogMap>> maptbl = expr::ConfData::getInstance()->get_mapping_table();
 }
 
 expr::PRIORITY expr::ConfigManager::get_priority(std::string priority)

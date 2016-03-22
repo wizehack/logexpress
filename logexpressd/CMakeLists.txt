@@ -5,12 +5,13 @@ project (logexpress)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -std=c++11")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin/")
-set(ROOT_DIR /home/wizehack/cpp_proj/logexpress)
+set(ROOT_DIR /home/wizehack/cpp_proj/logexpress/logexpressd/)
 set(INCLUDE_DIR_CONF ${ROOT_DIR}/src/configmanagement)
 set(INCLUDE_DIR_UTILS ${ROOT_DIR}/src/logmanagement)
 set(INCLUDE_DIR_LOGMGR ${ROOT_DIR}/src/utils)
 set(INCLUDE_DIR_CUI ${ROOT_DIR}/src/cui)
 set(INCLUDE_DIR_ERROR ${ROOT_DIR}/src/error)
+set(INCLUDE_DIR_LOG ${ROOT_DIR}/src/log)
 
 include_directories(
     ${INCLUDE_DIR_CONF}
@@ -18,6 +19,7 @@ include_directories(
     ${INCLUDE_DIR_LOGMGR}
     ${INCLUDE_DIR_CUI}
     ${INCLUDE_DIR_ERROR}
+    ${INCLUDE_DIR_LOG}
 )
 
 add_executable(
@@ -38,6 +40,11 @@ add_executable(
     ${ROOT_DIR}/src/error/configErrorHandler.cpp
     ${ROOT_DIR}/src/error/errorMessage.cpp
     ${ROOT_DIR}/src/error/errorMessagePool.cpp
+    ${ROOT_DIR}/src/log/logManager.cpp
+    ${ROOT_DIR}/src/log/log.cpp
+    ${ROOT_DIR}/src/log/udpServer.cpp
+    ${ROOT_DIR}/src/log/messageQueue.cpp
+    ${ROOT_DIR}/src/log/timer.cpp
 )
 
 # -ljson-c -lglib-2.0 

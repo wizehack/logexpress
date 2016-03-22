@@ -12,7 +12,6 @@ expr::CommandConfOptionHandler::~CommandConfOptionHandler(){}
 
 void expr::CommandConfOptionHandler::request(expr::CommandMessage* cmd_msg)
 {
-    expr::ConfigManager* configManager = NULL;
     expr::error_type e_type = expr::CONFIG;
     expr::error_code e_code = expr::UNKNOWN_CODE;
 
@@ -30,33 +29,24 @@ void expr::CommandConfOptionHandler::request(expr::CommandMessage* cmd_msg)
     // ./logexpress --config ~/cpp_proj/logexpress/resource/default.conf
     if( (opt_conf.compare("--config") == 0) || (opt_conf.compare("-c") == 0) )
     {
-        expr::File file_conf = expr::File(path_conf);
+        expr::File* file_conf = new expr::File(path_conf, "read");
 
-        if(file_conf.is_exist())
+        if(file_conf->is_exist())
         {
-            configManager = new expr::ConfigManager();           
-            std::string json_conf_payload(file_conf.get_contents());
-            
-            expr::ConfData* obj_conf = configManager->parse_conf_json(json_conf_payload);
+            expr::ConfigManager configManager;
+            std::string json_conf_payload(file_conf->get_contents());
 
-            if(obj_conf == NULL)
+            if(configManager.parse_conf_json(json_conf_payload) == NULL)
             {
                 e_code = expr::CONFIG_PARSE;
                 std::shared_ptr<expr::ErrorMessage> error_input_param = std::make_shared<expr::ErrorMessage>(e_type, e_code);
                 error_input_param->set_error_desc(path_conf + " is NOT json");
                 expr::ErrorMessagePool::getInstance()->add(error_input_param);
             }
-
-            //configuration using obj_conf
-
-            /*
-            if(obj_conf)
+            else
             {
-                delete obj_conf;
-                obj_conf = NULL;
+                configManager.start_log_manager();
             }
-            */
-
         }
         else
         {
@@ -67,6 +57,12 @@ void expr::CommandConfOptionHandler::request(expr::CommandMessage* cmd_msg)
                 error_input_param->set_error_desc(path_conf + " is NOT found");
                 expr::ErrorMessagePool::getInstance()->add(error_input_param);
             }
+        }
+
+        if(file_conf)
+        {
+            delete file_conf;
+            file_conf = NULL;
         }
     }
     else

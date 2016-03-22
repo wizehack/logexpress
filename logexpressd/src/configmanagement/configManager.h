@@ -14,6 +14,7 @@ namespace expr {
             ConfigManager();
             virtual ~ConfigManager();
             expr::ConfData* parse_conf_json(std::string json_conf);
+            void start_log_manager();
 
         private:
             expr::PRIORITY get_priority(std::string priority);
